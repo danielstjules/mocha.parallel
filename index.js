@@ -1,30 +1,55 @@
+var Promise = require('bluebird');
+
 /**
- * Builds the test suite dynamically to allow for parallel execution of the
- * individual specs. While each spec is ran in parallel, specs resolve in
- * series, leading to deterministic output. Expects an array of names,
- * arguments, and a function that returns a Promise.
+ * Generates a suite for parallel execution of individual specs. While each
+ * spec is ran in parallel, specs resolve in series, leading to deterministic
+ * output. Compatible with both callbacks and promises. Supports before/after
+ * hooks, but not afterEach/beforeEach hooks, nor nested suites.
  *
  * @example
- * parallel(['test1', 'test2'], [[1, 2], [2, 4]], function(x, expected) {
- *   return Promise.delay(100).then(function() {
- *     assert.equal(x + x, res);
+ * parallel('setTimeout', function() {
+ *   it('test1', function(done) {
+ *     setTimeout(done, 500);
+ *   });
+ *   it('test2', function(done) {
+ *     setTimeout(done, 500);
  *   });
  * });
  *
- * @param {string[]} names Names to assign the specs
- * @param {*[]}      args  Arguments to pass to the function
- * @param {}               A function returning a promise
+ * @param {string}   name
+ * @param {function} fn
  */
-module.exports = function parallel(names, args, fn) {
-  args.map(function(arg) {
-    if (arg instanceof Array) {
-      return fn.apply(fn, arg);
-    } else {
-      return fn(arg);
-    }
-  }).forEach(function(promise, i) {
-    it(names[i], function() {
-      return promise;
+module.exports = function parallel(name, fn) {
+  var specs = [];
+  var hooks = {};
+  var original = it;
+
+  it = function it(name, fn) {
+    var promise = new Promise(function(resolve, reject) {
+      // Use timeout to prioritize hook execution
+      setTimeout(function() {
+        var res = fn(function(err) {
+          if (err) return reject(err);
+          resolve();
+        });
+
+        // Using promises rather than callbacks
+        if (res && res.then) resolve(res);
+      });
+    });
+
+    specs.push({
+      name: name,
+      promise: promise
+    });
+  };
+
+  describe(name, fn);
+  it = original;
+
+  specs.forEach(function(spec) {
+    it(spec.name, function() {
+      return spec.promise;
     });
   });
 };
