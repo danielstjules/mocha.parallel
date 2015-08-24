@@ -1,0 +1,30 @@
+{
+  "name": "mocha.parallel",
+  "version": "0.0.1",
+  "description": "Run async mocha specs in parallel",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielstjules/mocha.parallel.git"
+  },
+  "keywords": [
+    "mocha",
+    "parallel",
+    "async",
+    "test",
+    "spec"
+  ],
+  "author": "Daniel St. Jules <danielst.jules@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danielstjules/mocha.parallel/issues"
+  },
+  "homepage": "https://github.com/danielstjules/mocha.parallel",
+  "devDependencies": {
+    "bluebird": "^2.9.34",
+    "mocha": "^2.2.5"
+  }
+}
