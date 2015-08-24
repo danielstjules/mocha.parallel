@@ -29,4 +29,20 @@ describe('parallel', function() {
       done();
     });
   });
+
+  it('isolates parallel suite execution', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.multiple;
+    exec(cmd, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('4 passing') !== -1);
+
+      // Specs should run in 1s
+      var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
+      assert(parseInt(timeStr, 10) === 1);
+
+      done();
+    });
+  });
 });

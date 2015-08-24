@@ -40,7 +40,7 @@ Rather than taking 1.5s, the specs below run in parallel, completing in just
 over 500ms.
 
 ``` javascript
-var parallel = require('../index.js');
+var parallel = require('mocha.parallel');
 var Promise  = require('bluebird');
 
 parallel('delays', function() {
@@ -66,6 +66,47 @@ parallel('delays', function() {
 
 
   3 passing (512ms)
+```
+
+Individual parallel suites run in series and in isolation from each other.
+In the example below, the two specs in suite1 run in parallel, followed by
+those in suite2.
+
+``` javascript
+var parallel = require('mocha.parallel');
+
+parallel('suite1', function() {
+  it('test1', function(done) {
+    setTimeout(done, 500);
+  });
+
+  it('test2', function(done) {
+    setTimeout(done, 500);
+  });
+});
+
+parallel('suite2', function() {
+  it('test1', function(done) {
+    setTimeout(done, 500);
+  });
+
+  it('test2', function(done) {
+    setTimeout(done, 500);
+  });
+});
+```
+
+```
+  suite1
+    ✓ test1 (503ms)
+    ✓ test2
+
+  suite2
+    ✓ test1 (505ms)
+    ✓ test2
+
+
+  4 passing (1s)
 ```
 
 ## Caveats
