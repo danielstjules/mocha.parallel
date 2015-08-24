@@ -20,8 +20,38 @@ var Promise = require('bluebird');
  * @param {function} fn
  */
 module.exports = function parallel(name, fn) {
-  var specs = [];
   var original = it;
+  var specs = patchIt();
+
+  fn();
+  it = original;
+
+  describe(name, function() {
+    if (!specs.length) return;
+
+    before(function() {
+      // hook in suite triggers execution
+      specs.forEach(function(spec) {
+        spec.promise = spec.getPromise();
+      });
+    });
+
+    specs.forEach(function(spec) {
+      it(spec.name, function() {
+        return spec.promise;
+      });
+    });
+  });
+};
+
+/**
+ * Patches the global it function used by mocha, and returns an empty array
+ * to be populated by its invocation.
+ *
+ * @returns {object[]}
+ */
+function patchIt() {
+  var specs = [];
 
   it = function it(name, fn) {
     var getPromise = function() {
@@ -46,23 +76,5 @@ module.exports = function parallel(name, fn) {
     });
   };
 
-  fn();
-  it = original;
-
-  describe(name, function() {
-    if (!specs.length) return;
-
-    before(function() {
-      // hook in suite triggers execution
-      specs.forEach(function(spec) {
-        spec.promise = spec.getPromise();
-      });
-    });
-
-    specs.forEach(function(spec) {
-      it(spec.name, function() {
-        return spec.promise;
-      });
-    });
-  });
-};
+  return specs;
+}
