@@ -12,6 +12,7 @@ describe('parallel', function() {
 
       assert(!stderr.length);
       assert(stdout.indexOf('3 passing') !== -1);
+      assert(stdout.indexOf('delays') !== -1);
 
       [
         '✓ test1',

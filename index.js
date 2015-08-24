@@ -44,12 +44,14 @@ module.exports = function parallel(name, fn) {
     });
   };
 
-  describe(name, fn);
+  fn();
   it = original;
 
-  specs.forEach(function(spec) {
-    it(spec.name, function() {
-      return spec.promise;
+  describe(name, function() {
+    specs.forEach(function(spec) {
+      it(spec.name, function() {
+        return spec.promise;
+      });
     });
   });
 };

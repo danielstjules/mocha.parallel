@@ -59,11 +59,13 @@ parallel('delays', function() {
 ```
 
 ```
-  ✓ test1 (506ms)
-  ✓ test2
-  ✓ test3
+  delays
+    ✓ test1 (500ms)
+    ✓ test2
+    ✓ test3
 
-  3 passing (516ms)
+
+  3 passing (512ms)
 ```
 
 ## Caveats
