@@ -16,8 +16,8 @@ npm install --save mocha.parallel
 /**
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
- * output. Compatible with both callbacks and promises. Supports before/after
- * hooks, but not afterEach/beforeEach hooks, nor nested suites.
+ * output. Compatible with both callbacks and promises. Does not support hooks
+ * nor nested suites.
  *
  * @example
  * parallel('setTimeout', function() {
