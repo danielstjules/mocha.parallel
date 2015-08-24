@@ -5,7 +5,7 @@ Run async mocha specs in parallel.
 [![Build Status](https://travis-ci.org/danielstjules/mocha.parallel.svg?branch=master)](https://travis-ci.org/danielstjules/mocha.parallel)
 
 ```
-/**
+/** javascript
  * Builds the test suite dynamically to allow for parallel execution of the
  * individual specs. While each spec is ran in parallel, specs resolve in
  * series, leading to deterministic output. Expects an array of names,
