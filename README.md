@@ -12,8 +12,8 @@ npm install --save mocha.parallel
 
 ## Overview
 
-```
-/** javascript
+``` javascript
+/**
  * Builds the test suite dynamically to allow for parallel execution of the
  * individual specs. While each spec is ran in parallel, specs resolve in
  * series, leading to deterministic output. Expects an array of names,
