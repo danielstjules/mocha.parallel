@@ -1,10 +1,11 @@
-var Promise = require('bluebird');
+var Promise   = require('bluebird');
+var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
 
 /**
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
- * output. Compatible with both callbacks and promises. Does not support hooks
- * nor nested suites.
+ * output. Compatible with both callbacks and promises. Supports hooks, but
+ * not nested suites.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -20,20 +21,44 @@ var Promise = require('bluebird');
  * @param {function} fn
  */
 module.exports = function parallel(name, fn) {
-  var original = it;
-  var specs = patchIt();
+  var specs = [];
+  var hooks = {};
+  var restoreIt = patchIt(specs);
+  var restoreHooks = patchHooks(hooks);
+  var run;
 
   fn();
-  it = original;
+
+  restoreIt();
+  restoreHooks();
+
+  hookTypes.forEach(function(key) {
+    hooks[key] = hooks[key] || function() {
+      return Promise.resolve();
+    };
+  });
+
+  run = function() {
+    specs.forEach(function(spec) {
+      spec.promise = hooks.beforeEach().then(function() {
+        return spec.getPromise();
+      }).then(function() {
+        return hooks.afterEach();
+      });
+    });
+  };
 
   describe(name, function() {
     if (!specs.length) return;
 
     before(function() {
-      // hook in suite triggers execution
-      specs.forEach(function(spec) {
-        spec.promise = spec.getPromise();
+      return hooks.before().then(function() {
+        run();
       });
+    });
+
+    after(function() {
+      return hooks.after();
     });
 
     specs.forEach(function(spec) {
@@ -45,36 +70,73 @@ module.exports = function parallel(name, fn) {
 };
 
 /**
- * Patches the global it function used by mocha, and returns an empty array
- * to be populated by its invocation.
+ * Patches the global it() function used by mocha, and returns a function that
+ * restores the original behavior when invoked.
  *
- * @returns {object[]}
+ * @param   {array}    specs Array on which to push specs
+ * @returns {function} Function that restores the original it() behavior
  */
-function patchIt() {
-  var specs = [];
+function patchIt(specs) {
+  var original = it;
+  var restore = function() {
+    it = original;
+  };
 
   it = function it(name, fn) {
-    var getPromise = function() {
-      return new Promise(function(resolve, reject) {
-        // Use timeout to prioritize hook execution
-        setTimeout(function() {
-          var res = fn(function(err) {
-            if (err) return reject(err);
-            resolve();
-          });
-
-          // Using promises rather than callbacks
-          if (res && res.then) resolve(res);
-        });
-      });
-    };
-
     specs.push({
       name: name,
-      getPromise: getPromise,
+      getPromise: createWrapper(fn),
       promise: null
     });
   };
 
-  return specs;
+  return restore;
+}
+
+/**
+ * Patches the global hook functions used by mocha, and returns a function
+ * that restores the original behavior when invoked.
+ *
+ * @param   {object}   hooks Object on which to add hooks
+ * @returns {function} Function that restores the original it() behavior
+ */
+function patchHooks(hooks) {
+  var original = {};
+  var restore;
+
+  hookTypes.map(function(key) {
+    original[key] = global[key];
+
+    global[key] = function(fn) {
+      hooks[key] = createWrapper(fn);
+    };
+  });
+
+  restore = function() {
+    hookTypes.forEach(function(key) {
+      global[key] = original[key];
+    });
+  };
+
+  return restore;
+}
+
+/**
+ * Returns a wrapper for a given runnable, including specs or hooks.
+ *
+ * @param   {function} fn
+ * @returns {function}
+ */
+function createWrapper(fn) {
+  return function() {
+    return new Promise(function(resolve, reject) {
+      var res = fn(function(err) {
+        if (err) return reject(err);
+        resolve();
+      });
+
+      // Using promises rather than callbacks
+      if (res && res.then) resolve(res);
+    });
+  };
 }

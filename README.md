@@ -16,8 +16,8 @@ npm install --save mocha.parallel
 /**
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
- * output. Compatible with both callbacks and promises. Does not support hooks
- * nor nested suites.
+ * output. Compatible with both callbacks and promises. Supports hooks, but
+ * not nested suites.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -35,6 +35,8 @@ npm install --save mocha.parallel
 ```
 
 ## Examples
+
+#### Basic
 
 Rather than taking 1.5s, the specs below run in parallel, completing in just
 over 500ms.
@@ -67,6 +69,8 @@ parallel('delays', function() {
 
   3 passing (512ms)
 ```
+
+#### Isolation
 
 Individual parallel suites run in series and in isolation from each other.
 In the example below, the two specs in suite1 run in parallel, followed by
@@ -109,7 +113,50 @@ parallel('suite2', function() {
   4 passing (1s)
 ```
 
-## Caveats
+#### Hooks
+
+Hook behavior may not be as intuitive when ran using this library.
+
+``` javascript
+var parallel = require('mocha.parallel');
+var assert   = require('assert');
+
+parallel('hooks', function() {
+  var i = 0;
+
+  beforeEach(function(done) {
+    // The beforeEach will be invoked twice,
+    // before either spec starts
+    setTimeout(function() {
+      i++;
+      done();
+    }, 50);
+  });
+
+  it('test1', function(done) {
+    // Incremented by 2x beforeEach
+    setTimeout(function() {
+      assert.equal(i, 2);
+      done();
+    }, 1000);
+  });
+
+  it('test2', function(done) {
+    // Incremented by 2x beforeEach
+    setTimeout(function() {
+      assert.equal(i, 2);
+      done();
+    }, 1000);
+  });
+});
+```
+
+## Notes
 
 Debugging parallel execution can be more difficult as exceptions may be thrown
-from any of the running specs.
+from any of the running specs. Also, the use of the word "parallel" is in the
+same spirit as other nodejs async control flow libraries, such as
+https://github.com/caolan/async#parallel, https://github.com/creationix/step
+and https://github.com/tj/co#yieldables This library does not offer true
+parallelism using multiple threads/workers/fibers, or by spawning multiple
+processes.

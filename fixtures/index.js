@@ -1,7 +1,7 @@
 var path = require('path');
 
 var absolutePaths = {};
-var fixtures = ['delay', 'multiple'];
+var fixtures = ['delay', 'multiple', 'hooks', 'hooksSimple'];
 
 fixtures.forEach(function(fixture) {
   absolutePaths[fixture] = path.resolve(__dirname, fixture + '.js');
