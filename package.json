@@ -1,6 +1,6 @@
 {
   "name": "mocha.parallel",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Run async mocha specs in parallel",
   "main": "index.js",
   "scripts": {
