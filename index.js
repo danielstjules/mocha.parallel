@@ -1,4 +1,5 @@
 var Promise   = require('bluebird');
+var domain    = require('domain');
 var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
 
 /**
@@ -25,6 +26,7 @@ module.exports = function parallel(name, fn) {
   var hooks = {};
   var restoreIt = patchIt(specs);
   var restoreHooks = patchHooks(hooks);
+  var restoreUncaught;
   var run;
 
   fn();
@@ -40,10 +42,17 @@ module.exports = function parallel(name, fn) {
 
   run = function() {
     specs.forEach(function(spec) {
-      spec.promise = hooks.beforeEach().then(function() {
-        return spec.getPromise();
-      }).then(function() {
-        return hooks.afterEach();
+      // beforeEach/spec/afterEach are grouped as a cancellable promise
+      // and ran as part of a domain
+      domain.create().on('error', function(err) {
+        spec.error = err;
+        spec.promise.cancel(err);
+      }).run(function() {
+        spec.promise = hooks.beforeEach().cancellable().then(function() {
+          return spec.getPromise();
+        }).then(function() {
+          return hooks.afterEach();
+        });
       });
     });
   };
@@ -52,18 +61,25 @@ module.exports = function parallel(name, fn) {
     if (!specs.length) return;
 
     before(function() {
+      // Before hook exceptions are handled by mocha
       return hooks.before().then(function() {
+        restoreUncaught = patchUncaught();
         run();
       });
     });
 
     after(function() {
+      // After hook errors are handled by mocha
+      if (restoreUncaught) restoreUncaught();
       return hooks.after();
     });
 
     specs.forEach(function(spec) {
       it(spec.name, function() {
-        return spec.promise;
+        if (spec.err) throw spec.err;
+        return spec.promise.then(function() {
+          if (spec.err) throw spec.err;
+        });
       });
     });
   });
@@ -86,6 +102,7 @@ function patchIt(specs) {
     specs.push({
       name: name,
       getPromise: createWrapper(fn),
+      error: null,
       promise: null
     });
   };
@@ -122,7 +139,7 @@ function patchHooks(hooks) {
 }
 
 /**
- * Returns a wrapper for a given runnable, including specs or hooks.
+ * Returns a wrapper for a given runnable's fn, including specs or hooks.
  *
  * @param   {function} fn
  * @returns {function}
@@ -140,3 +157,30 @@ function createWrapper(fn) {
     });
   };
 }
+
+/**
+ * Removes mocha's uncaughtException handler, allowing exceptions to be handled
+ * by domains during parallel spec execution.
+ *
+ * @returns {function} Function that restores mocha's uncaughtException listener
+ */
+function patchUncaught() {
+  var name = 'uncaughtException';
+  var originalListener = process.listeners(name).pop();
+
+  var listener = function(err) {
+    // noop
+  };
+
+  process.removeListener(name, originalListener);
+  process.on(name, listener);
+
+  return function() {
+    process.removeListener(name, listener);
+    process.on(name, originalListener);
+  };
+}
+
+Promise.onPossiblyUnhandledRejection(function() {
+  // Stop bluebird from printing the unhandled rejections
+});

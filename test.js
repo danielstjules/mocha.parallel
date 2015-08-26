@@ -77,4 +77,19 @@ describe('parallel', function() {
       done();
     });
   });
+
+  it('links uncaught exceptions to the spec that threw them', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.uncaughtException;
+    exec(cmd, function(err, stdout, stderr) {
+      assert(err);
+      assert(!stderr.length);
+
+      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf('1 failing') !== -1);
+      assert(stdout.indexOf('1) uncaught test2:') !== -1);
+      assert(stdout.indexOf('fixtures/uncaughtException.js:11') !== -1);
+
+      done();
+    });
+  });
 });

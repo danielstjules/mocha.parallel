@@ -1,6 +1,7 @@
 # mocha.parallel
 
-Run async mocha specs in parallel.
+Speed up your IO bound async specs by running them at the same time. Compatible
+with node/iojs, and most versions of mocha.
 
 [![Build Status](https://travis-ci.org/danielstjules/mocha.parallel.svg?branch=master)](https://travis-ci.org/danielstjules/mocha.parallel)
 
@@ -36,7 +37,12 @@ npm install --save mocha.parallel
 
 ## Examples
 
-#### Basic
+In the examples below, imagine that `setTimeout` is a function that performs
+some async IO with the specified delay. This could include requests to your
+http server using a module like `supertest` or `request`. Or maybe a headless
+browser using `zombie` or `nightmare`.
+
+#### Simple
 
 Rather than taking 1.5s, the specs below run in parallel, completing in just
 over 500ms.
@@ -111,6 +117,47 @@ parallel('suite2', function() {
 
 
   4 passing (1s)
+```
+
+#### Error handling
+
+Uncaught exceptions are associated with the spec that threw them, despite them
+all running at the same time. So debugging doesn't need to be too difficult!
+
+``` javascript
+var parallel = require('mocha.parallel');
+
+parallel('uncaught', function() {
+  it('test1', function(done) {
+    setTimeout(done, 500);
+  });
+
+  it('test2', function(done) {
+    setTimeout(function() {
+      // Thrown while test1 is executing
+      throw new Error('test');
+    }, 100);
+  });
+
+  it('test3', function(done) {
+    setTimeout(done, 500);
+  });
+});
+```
+
+```
+  uncaught
+    ✓ test1 (501ms)
+    1) test2
+    ✓ test3
+
+
+  2 passing (519ms)
+  1 failing
+
+  1) uncaught test2:
+     Error: test
+      at null._onTimeout (fixtures/uncaughtException.js:11:13)
 ```
 
 #### Hooks
