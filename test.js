@@ -78,6 +78,22 @@ describe('parallel', function() {
     });
   });
 
+  it('correctly handles spec failures', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.failure;
+    exec(cmd, function(err, stdout, stderr) {
+      assert(err);
+      assert(!stderr.length);
+
+      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf('1 failing') !== -1);
+      assert(stdout.indexOf('1) suite test2:') !== -1);
+      assert(stdout.indexOf('Error: Expected error') !== -1);
+      assert(stdout.indexOf('fixtures/failure.js:10') !== -1);
+
+      done();
+    });
+  });
+
   it('links uncaught exceptions to the spec that threw them', function(done) {
     var cmd = './node_modules/.bin/mocha ' + fixtures.uncaughtException;
     exec(cmd, function(err, stdout, stderr) {
