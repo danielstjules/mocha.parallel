@@ -1,4 +1,5 @@
 var parallel = require('../index.js');
+var assert   = require('assert');
 
 parallel('suite', function() {
   it('test1', function(done) {
@@ -7,7 +8,8 @@ parallel('suite', function() {
 
   it('test2', function(done) {
     setTimeout(function() {
-      return done(new Error('Expected error'));
+      assert.equal(true, false);
+      done();
     }, 100);
   });
 
