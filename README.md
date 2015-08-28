@@ -1,7 +1,7 @@
 # mocha.parallel
 
 Speed up your IO bound async specs by running them at the same time. Compatible
-with node/iojs, and most versions of mocha.
+with node/iojs, and Mocha 2.x.x.
 
 [![Build Status](https://travis-ci.org/danielstjules/mocha.parallel.svg?branch=master)](https://travis-ci.org/danielstjules/mocha.parallel)
 
