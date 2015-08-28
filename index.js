@@ -5,8 +5,8 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
 /**
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
- * output. Compatible with both callbacks and promises. Supports hooks, but
- * not nested suites.
+ * output. Compatible with both callbacks and promises. Supports hooks, pending
+ * or skipped specs, but not nested suites.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -75,6 +75,10 @@ module.exports = function parallel(name, fn) {
     });
 
     specs.forEach(function(spec) {
+      if (spec.skip) {
+        return it.skip(spec.name);
+      }
+
       it(spec.name, function() {
         if (spec.err) throw spec.err;
         return spec.promise.then(function() {
@@ -102,6 +106,17 @@ function patchIt(specs) {
     specs.push({
       name: name,
       getPromise: createWrapper(fn),
+      skip: null,
+      error: null,
+      promise: null
+    });
+  };
+
+  it.skip = function skip(name, fn) {
+    specs.push({
+      name: name,
+      getPromise: createWrapper(fn),
+      skip: true,
       error: null,
       promise: null
     });
