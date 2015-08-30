@@ -168,32 +168,37 @@ Hook behavior may not be as intuitive when ran using this library.
 var parallel = require('mocha.parallel');
 var assert   = require('assert');
 
-parallel('hooks', function() {
+describe('suite', function() {
   var i = 0;
 
   beforeEach(function(done) {
-    // The beforeEach will be invoked twice,
-    // before either spec starts
-    setTimeout(function() {
+    // Invoked twice, before either spec starts
+    i++;
+    done();
+  });
+
+  parallel('hooks', function() {
+    beforeEach(function(done) {
+      // Invoked twice, before either spec starts
       i++;
       done();
-    }, 50);
-  });
+    });
 
-  it('test1', function(done) {
-    // Incremented by 2x beforeEach
-    setTimeout(function() {
-      assert.equal(i, 2);
-      done();
-    }, 1000);
-  });
+    it('test1', function(done) {
+      // Incremented by 4x beforeEach
+      setTimeout(function() {
+        assert.equal(i, 4);
+        done();
+      }, 1000);
+    });
 
-  it('test2', function(done) {
-    // Incremented by 2x beforeEach
-    setTimeout(function() {
-      assert.equal(i, 2);
-      done();
-    }, 1000);
+    it('test2', function(done) {
+      // Incremented by 4x beforeEach
+      setTimeout(function() {
+        assert.equal(i, 4);
+        done();
+      }, 1000);
+    });
   });
 });
 ```

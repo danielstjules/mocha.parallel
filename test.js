@@ -37,10 +37,7 @@ describe('parallel', function() {
 
       assert(!stderr.length);
       assert(stdout.indexOf('4 passing') !== -1);
-
-      // Specs should run in 1s
-      var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
-      assert(parseInt(timeStr, 10) === 1);
+      assertOneSecond(stdout);
 
       done();
     });
@@ -53,26 +50,37 @@ describe('parallel', function() {
 
       assert(!stderr.length);
       assert(stdout.indexOf('2 passing') !== -1);
+      assertOneSecond(stdout);
 
-      // Specs should run in 1s
-      var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
-      assert(parseInt(timeStr, 10) === 1);
+      done();
+    });
+  });
+
+  it('supports parent hooks', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.parentHooks;
+    var hookStr = 'suiteABeforeEach, suiteBBeforeEach, suiteABeforeEach, ' +
+      'suiteBBeforeEach, childBeforeEach, childBeforeEach';
+
+    exec(cmd, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf(hookStr) !== -1);
+      assertOneSecond(stdout);
 
       done();
     });
   });
 
   it('correctly handles the readme example', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.hooksSimple;
+    var cmd = './node_modules/.bin/mocha ' + fixtures.hooksExample;
     exec(cmd, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
       assert(stdout.indexOf('2 passing') !== -1);
-
-      // Specs should run in 1s
-      var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
-      assert(parseInt(timeStr, 10) === 1);
+      assertOneSecond(stdout);
 
       done();
     });
@@ -138,3 +146,13 @@ describe('parallel', function() {
     });
   });
 });
+
+/**
+ * Asserts that a given test suite ran for one second, given mocha's stdout.
+ *
+ * @param {string} stdout
+ */
+function assertOneSecond(stdout) {
+  var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
+  assert(parseInt(timeStr, 10) === 1);
+}

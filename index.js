@@ -27,6 +27,7 @@ module.exports = function parallel(name, fn) {
   var restoreIt = patchIt(specs);
   var restoreHooks = patchHooks(hooks);
   var restoreUncaught;
+  var parentHooks;
   var run;
 
   fn();
@@ -48,17 +49,22 @@ module.exports = function parallel(name, fn) {
         spec.error = err;
         spec.promise.cancel(err);
       }).run(function() {
-        spec.promise = hooks.beforeEach().cancellable().then(function() {
-          return spec.getPromise();
-        }).then(function() {
-          return hooks.afterEach();
-        });
+        spec.promise = parentHooks.beforeEach()
+          .cancellable()
+          .then(hooks.beforeEach)
+          .then(spec.getPromise)
+          .then(hooks.afterEach)
+          .then(parentHooks.afterEach);
       });
     });
   };
 
   describe(name, function() {
+    var parentContext = this;
     if (!specs.length) return;
+
+    parentHooks = getParentHooks(parentContext);
+    disableEachHooks(parentContext);
 
     before(function() {
       // Before hook exceptions are handled by mocha
@@ -69,6 +75,7 @@ module.exports = function parallel(name, fn) {
     });
 
     after(function() {
+      enableEachHooks(parentContext);
       // After hook errors are handled by mocha
       if (restoreUncaught) restoreUncaught();
       return hooks.after();
@@ -171,6 +178,77 @@ function createWrapper(fn) {
       if (res && res.then) resolve(res);
     });
   };
+}
+
+/**
+ * Wraps the existing hooks into a series of promises. Returns an object with
+ * two functions: beforeEach and afterEach. Each function returns a promise
+ * that resolves once all parents hooks have completed, recursively.
+ *
+ * @param   {Context} context
+ * @returns {object}
+ */
+function getParentHooks(context) {
+  var getOrderedHooks = function(context, type) {
+    var hooks = [].concat(context['_' + type]).map(function(hook) {
+      return createWrapper(hook.fn);
+    });
+
+    if (!context.parent) return hooks;
+
+    return hooks.concat(getOrderedHooks(context.parent, type));
+  };
+
+  return ['beforeEach', 'afterEach'].reduce(function(res, type) {
+    var array = getOrderedHooks(context, type);
+    // parent beforeEach runs before child beforeEach
+    if (type === 'beforeEach') {
+      array.reverse();
+    }
+
+    res[type] = function() {
+      var promise = Promise.resolve();
+      array.forEach(function(hook) {
+        promise = promise.then(hook());
+      });
+
+      return promise;
+    };
+    return res;
+  }, {});
+}
+
+/**
+ * Given a mocha context object, recursively disables all beforeEach/afterEach
+ * hooks for all parents suites. Necessary override when the parent hooks are
+ * invoked.
+ *
+ * @param {Context} context
+ */
+function disableEachHooks(context) {
+  context._disabledBeforeEach = context._beforeEach;
+  context._disabledAfterEach = context._afterEach;
+  context._beforeEach = [];
+  context._afterEach = [];
+
+  if (!context.parent) return;
+  disableEachHooks(context.parent);
+}
+
+/**
+ * Given a mocha context object, recursively re-enables all beforeEach and
+ * afterEach \hooks.
+ *
+ * @param {Context} context
+ */
+function enableEachHooks(context) {
+  context._beforeEach= context._disabledBeforeEach;
+  context._afterEach = context._disabledAfterEach;
+  delete context._disabledBeforeEach;
+  delete context._disabledAfterEach;
+
+  if (!context.parent) return;
+  disableEachHooks(context.parent);
 }
 
 /**
