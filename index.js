@@ -49,12 +49,14 @@ module.exports = function parallel(name, fn) {
         spec.error = err;
         spec.promise.cancel(err);
       }).run(function() {
-        spec.promise = parentHooks.beforeEach()
-          .cancellable()
-          .then(hooks.beforeEach)
-          .then(spec.getPromise)
-          .then(hooks.afterEach)
-          .then(parentHooks.afterEach);
+        process.nextTick(function() {
+          spec.promise = parentHooks.beforeEach()
+            .cancellable()
+            .then(hooks.beforeEach)
+            .then(spec.getPromise)
+            .then(hooks.afterEach)
+            .then(parentHooks.afterEach);
+        });
       });
     });
   };
@@ -87,9 +89,9 @@ module.exports = function parallel(name, fn) {
       }
 
       it(spec.name, function() {
-        if (spec.err) throw spec.err;
+        if (spec.error) throw spec.error;
         return spec.promise.then(function() {
-          if (spec.err) throw spec.err;
+          if (spec.error) throw spec.error;
         });
       });
     });
