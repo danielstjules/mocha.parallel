@@ -46,6 +46,12 @@ module.exports = function parallel(name, fn) {
       // beforeEach/spec/afterEach are grouped as a cancellable promise
       // and ran as part of a domain
       domain.create().on('error', function(err) {
+        // if a test suite is hacking around mocha's uncaughtException
+        // handling, propagate the error
+        if (process.listeners('uncaughtException').length) {
+          throw err;
+        }
+
         spec.error = err;
         spec.promise.cancel(err);
       }).run(function() {
