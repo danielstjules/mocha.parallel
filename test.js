@@ -43,6 +43,18 @@ describe('parallel', function() {
     });
   });
 
+  it('supports synchronous hooks/specs', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.sync;
+    exec(cmd, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('3 passing') !== -1);
+
+      done();
+    });
+  });
+
   it('supports all mocha hooks', function(done) {
     var cmd = './node_modules/.bin/mocha ' + fixtures.hooks;
     exec(cmd, function(err, stdout, stderr) {

@@ -174,8 +174,10 @@ function createWrapper(fn) {
         resolve();
       });
 
-      // Using promises rather than callbacks
-      if (res && res.then) resolve(res);
+      // Synchronous spec, or using promises rather than callbacks
+      if (!fn.length || (res && res.then)) {
+        resolve(res);
+      }
     });
   };
 }
