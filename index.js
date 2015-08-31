@@ -257,7 +257,8 @@ function enableEachHooks(context) {
 
 /**
  * Removes mocha's uncaughtException handler, allowing exceptions to be handled
- * by domains during parallel spec execution.
+ * by domains during parallel spec execution, and all others to terminate the
+ * process.
  *
  * @returns {function} Function that restores mocha's uncaughtException listener
  */
@@ -265,15 +266,9 @@ function patchUncaught() {
   var name = 'uncaughtException';
   var originalListener = process.listeners(name).pop();
 
-  var listener = function(err) {
-    // noop
-  };
-
   process.removeListener(name, originalListener);
-  process.on(name, listener);
 
   return function() {
-    process.removeListener(name, listener);
     process.on(name, originalListener);
   };
 }
