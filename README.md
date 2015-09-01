@@ -35,6 +35,11 @@ npm install --save mocha.parallel
  */
 ```
 
+## Success stories
+
+* **[nightmare](https://github.com/segmentio/nightmare/pull/209)**:
+  Cut test suite running time from 2m to 1m
+
 ## Examples
 
 In the examples below, imagine that `setTimeout` is a function that performs
