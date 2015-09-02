@@ -21,7 +21,7 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  * @param {string}   name
  * @param {function} fn
  */
-module.exports = function parallel(name, fn) {
+var parallel = function(name, fn, describeOnly) {
   var specs = [];
   var hooks = {};
   var restoreIt = patchIt(specs);
@@ -61,7 +61,7 @@ module.exports = function parallel(name, fn) {
     });
   };
 
-  describe(name, function() {
+  (describeOnly ? describe.only : describe)(name, function() {
     var parentContext = this;
     if (!specs.length) return;
 
@@ -88,7 +88,7 @@ module.exports = function parallel(name, fn) {
         return it.skip(spec.name);
       }
 
-      it(spec.name, function() {
+      (spec.only ? it.only : it)(spec.name, function() {
         if (spec.error) throw spec.error;
         return spec.promise.then(function() {
           if (spec.error) throw spec.error;
@@ -115,6 +115,7 @@ function patchIt(specs) {
     specs.push({
       name: name,
       getPromise: createWrapper(fn),
+      only: null,
       skip: null,
       error: null,
       promise: null
@@ -125,7 +126,19 @@ function patchIt(specs) {
     specs.push({
       name: name,
       getPromise: createWrapper(fn),
+      only: null,
       skip: true,
+      error: null,
+      promise: null
+    });
+  };
+
+  it.only = function skip(name, fn) {
+    specs.push({
+      name: name,
+      getPromise: createWrapper(fn),
+      only: true,
+      skip: null,
       error: null,
       promise: null
     });
@@ -273,6 +286,13 @@ function patchUncaught() {
   };
 }
 
+parallel.only = function (name, fn) {
+  parallel(name, fn, true);
+};
+
 Promise.onPossiblyUnhandledRejection(function() {
   // Stop bluebird from printing the unhandled rejections
 });
+
+
+module.exports = parallel;
