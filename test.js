@@ -157,6 +157,30 @@ describe('parallel', function() {
       done();
     });
   });
+
+  it('is compatible with it.only for pending specs', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.only;
+    exec(cmd, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('1 passing') !== -1);
+
+      done();
+    });
+  });
+
+  it('is compatible with parallel.only for pending specs', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.parallelOnly;
+    exec(cmd, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('3 passing') !== -1);
+
+      done();
+    });
+  });
 });
 
 /**

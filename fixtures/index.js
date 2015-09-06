@@ -2,7 +2,7 @@ var path = require('path');
 
 var absolutePaths = {};
 var fixtures = ['delay', 'multiple', 'hooks', 'hooksExample',
-  'uncaughtException', 'skip', 'failure', 'assertionFailure',
+  'uncaughtException', 'skip', 'only', 'parallelOnly', 'failure', 'assertionFailure',
   'parentHooks', 'sync'];
 
 fixtures.forEach(function(fixture) {
