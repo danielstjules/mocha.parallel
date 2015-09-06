@@ -6,7 +6,8 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
  * output. Compatible with both callbacks and promises. Supports hooks, pending
- * or skipped specs, but not nested suites.
+ * or skipped specs, but not nested suites. parallel.only() or it.only() may
+ * be used to only wait on the specified specs or suites.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -21,7 +22,7 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  * @param {string}   name
  * @param {function} fn
  */
-var parallel = function(name, fn, describeOnly) {
+function parallel(name, fn, only) {
   var specs = [];
   var hooks = {};
   var restoreIt = patchIt(specs);
@@ -61,7 +62,7 @@ var parallel = function(name, fn, describeOnly) {
     });
   };
 
-  (describeOnly ? describe.only : describe)(name, function() {
+  (only ? describe.only : describe)(name, function() {
     var parentContext = this;
     if (!specs.length) return;
 
@@ -96,6 +97,16 @@ var parallel = function(name, fn, describeOnly) {
       });
     });
   });
+};
+
+/**
+ * Wrapper for mocha's describe.only()
+ *
+ * @param {string}   name
+ * @param {function} fn
+ */
+parallel.only = function(name, fn) {
+  parallel(name, fn, true);
 };
 
 /**
@@ -285,10 +296,6 @@ function patchUncaught() {
     process.on(name, originalListener);
   };
 }
-
-parallel.only = function (name, fn) {
-  parallel(name, fn, true);
-};
 
 Promise.onPossiblyUnhandledRejection(function() {
   // Stop bluebird from printing the unhandled rejections
