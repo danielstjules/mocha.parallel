@@ -164,6 +164,7 @@ describe('parallel', function() {
       if (err) return done(err);
 
       assert(!stderr.length);
+      assert(stdout.indexOf('should not run') === -1);
       assert(stdout.indexOf('1 passing') !== -1);
 
       done();

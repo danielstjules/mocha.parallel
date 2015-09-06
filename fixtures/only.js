@@ -10,6 +10,7 @@ parallel('suite', function() {
   });
 
   it('test3', function(done) {
+    console.log('should not run');
     setTimeout(done, 500);
   });
 });

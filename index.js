@@ -43,6 +43,15 @@ function parallel(name, fn, only) {
   });
 
   run = function() {
+    // If spec.only() was used, only invoke that subset of specs
+    var onlySpecs = specs.filter(function(spec) {
+      return spec.only;
+    });
+
+    if (onlySpecs.length) {
+      specs = onlySpecs;
+    }
+
     specs.forEach(function(spec) {
       // beforeEach/spec/afterEach are grouped as a cancellable promise
       // and ran as part of a domain
