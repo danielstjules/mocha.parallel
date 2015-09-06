@@ -43,7 +43,7 @@ function parallel(name, fn, only) {
   });
 
   run = function() {
-    // If spec.only() was used, only invoke that subset of specs
+    // If it.only() was used, only invoke that subset of specs
     var onlySpecs = specs.filter(function(spec) {
       return spec.only;
     });
