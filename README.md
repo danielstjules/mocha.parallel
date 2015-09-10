@@ -5,6 +5,11 @@ with node/iojs, and Mocha 2.x.x.
 
 [![Build Status](https://travis-ci.org/danielstjules/mocha.parallel.svg?branch=master)](https://travis-ci.org/danielstjules/mocha.parallel)
 
+## Success stories
+
+* **[nightmare](https://github.com/segmentio/nightmare/pull/209)**:
+  Cut test suite running time from 2m to 1m
+
 ## Installation
 
 ```
@@ -35,11 +40,6 @@ npm install --save mocha.parallel
  * @param {function} fn
  */
 ```
-
-## Success stories
-
-* **[nightmare](https://github.com/segmentio/nightmare/pull/209)**:
-  Cut test suite running time from 2m to 1m
 
 ## Examples
 
