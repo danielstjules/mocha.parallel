@@ -7,10 +7,11 @@ with node/iojs, and Mocha 2.x.x.
 
 ## Success stories
 
-* **[node-horseman](https://github.com/johntitus/node-horseman/commit/8fe00cd372ad1d9c1e794da8d61ee51149c63d6f)**:
-  Cut test suite running time by 50%
+* **[neo-async](https://github.com/suguru03/neo-async/commit/10af3dbb84c19ca2b0bb06892b188832649198d0)**:
+  Cut test suite running time from 20m to 7m
 * **[nightmare](https://github.com/segmentio/nightmare/pull/209)**:
   Cut test suite running time from 2m to 1m
+* **[node-horseman](https://github.com/johntitus/node-horseman/commit/8fe00cd372ad1d9c1e794da8d61ee51149c63d6f)**
 
 ## Installation
 
