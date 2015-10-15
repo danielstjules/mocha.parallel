@@ -21,8 +21,9 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  *
  * @param {string}   name
  * @param {function} fn
+ * @param {string} key - ['only', 'skip']
  */
-function parallel(name, fn, only) {
+function parallel(name, fn, key) {
   var specs = [];
   var hooks = {};
   var restoreIt = patchIt(specs);
@@ -71,7 +72,7 @@ function parallel(name, fn, only) {
     });
   };
 
-  (only ? describe.only : describe)(name, function() {
+  (key ? describe[key] : describe)(name, function() {
     var parentContext = this;
     if (!specs.length) return;
 
@@ -106,7 +107,7 @@ function parallel(name, fn, only) {
       });
     });
   });
-};
+}
 
 /**
  * Wrapper for mocha's describe.only()
@@ -115,7 +116,17 @@ function parallel(name, fn, only) {
  * @param {function} fn
  */
 parallel.only = function(name, fn) {
-  parallel(name, fn, true);
+  parallel(name, fn, 'only');
+};
+
+/**
+ * Wrapper for mocha's describe.skip()
+ *
+ * @param {string}   name
+ * @param {function} fn
+ */
+parallel.skip = function(name, fn) {
+  parallel(name, fn, 'skip');
 };
 
 /**
