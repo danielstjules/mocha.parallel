@@ -6,8 +6,9 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
  * output. Compatible with both callbacks and promises. Supports hooks, pending
- * or skipped specs, but not nested suites. parallel.only() or it.only() may
- * be used to only wait on the specified specs or suites.
+ * or skipped specs/suites via parallel.skip() and it.skip(), but not nested
+ * suites.  parallel.only() and it.only() may be used to only wait on the
+ * specified specs and suites.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -19,11 +20,21 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  *   });
  * });
  *
- * @param {string}   name
- * @param {function} fn
- * @param {string} key - ['only', 'skip']
+ * @param {string}   name Name of the function
+ * @param {function} fn   The test suite's body
  */
-function parallel(name, fn, key) {
+function parallel(name, fn) {
+  _parallel(name, fn);
+}
+
+/**
+ * Private function invoked by parallel.
+ *
+ * @param {string}   name  Name of the function
+ * @param {function} fn    The suite or test body
+ * @param {string}   [key] One of 'skip' or 'only'
+ */
+function _parallel(name, fn, key) {
   var specs = [];
   var hooks = {};
   var restoreIt = patchIt(specs);
@@ -116,7 +127,7 @@ function parallel(name, fn, key) {
  * @param {function} fn
  */
 parallel.only = function(name, fn) {
-  parallel(name, fn, 'only');
+  _parallel(name, fn, 'only');
 };
 
 /**
@@ -126,7 +137,7 @@ parallel.only = function(name, fn) {
  * @param {function} fn
  */
 parallel.skip = function(name, fn) {
-  parallel(name, fn, 'skip');
+  _parallel(name, fn, 'skip');
 };
 
 /**

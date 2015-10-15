@@ -26,8 +26,9 @@ npm install --save mocha.parallel
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
  * output. Compatible with both callbacks and promises. Supports hooks, pending
- * or skipped specs, but not nested suites. parallel.only() or it.only() may
- * be used to only wait on the specified specs or suites.
+ * or skipped specs/suites via parallel.skip() and it.skip(), but not nested
+ * suites.  parallel.only() and it.only() may be used to only wait on the
+ * specified specs and suites.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -39,8 +40,8 @@ npm install --save mocha.parallel
  *   });
  * });
  *
- * @param {string}   name
- * @param {function} fn
+ * @param {string}   name Name of the function
+ * @param {function} fn   The test suite's body
  */
 ```
 
