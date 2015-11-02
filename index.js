@@ -9,7 +9,7 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  * or skipped specs/suites via parallel.skip() and it.skip(), but not nested
  * suites.  parallel.only() and it.only() may be used to only wait on the
  * specified specs and suites. Runnable contexts are bound, so this.skip()
- * may be used from within a spec, but this.timeout() is not supported.
+ * and this.timeout() may be used from within a spec.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -77,6 +77,9 @@ function _parallel(name, fn, key) {
             .cancellable()
             .then(hooks.beforeEach)
             .then(spec.getPromise)
+            .then(function() {
+              clearTimeout(spec.timeout);
+            })
             .then(hooks.afterEach)
             .then(parentHooks.afterEach);
         });
@@ -104,9 +107,10 @@ function _parallel(name, fn, key) {
       });
     });
 
-    // Retrieve spec contexts from suite
+    // Retrieve spec contexts from suite, and patch
     this.tests.forEach(function(test, i) {
       specs[i].ctx = test.ctx;
+      patchSpecCtx(specs[i])
     });
 
     before(function() {
@@ -150,7 +154,7 @@ parallel.skip = function(name, fn) {
  * Patches the global it() function used by mocha, and returns a function that
  * restores the original behavior when invoked.
  *
- * @param   {array}    specs Array on which to push specs
+ * @param   {Spec[]}   specs Array on which to push specs
  * @returns {function} Function that restores the original it() behavior
  */
 function patchIt(specs) {
@@ -170,6 +174,7 @@ function patchIt(specs) {
       },
       only: opts.only || null,
       skip: opts.skip || null,
+      timeout: null,
       error: null,
       promise: null
     };
@@ -190,6 +195,27 @@ function patchIt(specs) {
   };
 
   return restore;
+}
+
+/**
+ * Patches a given spec's ctx. Overrides the timeout function.
+ *
+ * @param {Spec}
+ */
+function patchSpecCtx(spec) {
+  var origTimeout = spec.ctx.timeout.bind(spec.ctx);
+  spec.ctx.timeout = function(ms) {
+    // Disable original timeout
+    origTimeout(0);
+    // Apply our timeout
+    ms = ms || 1e9;
+    spec.timeout = setTimeout(function() {
+      var error = new Error('timeout of ' + ms + 'ms exceeded. Ensure the ' +
+        'done() callback is being called in this test.');
+      error.stack = null;
+      throw error;
+    }, ms);
+  }
 }
 
 /**

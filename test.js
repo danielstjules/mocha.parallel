@@ -209,6 +209,22 @@ describe('parallel', function() {
       done();
     });
   });
+
+  it('supports this.timeout() from a spec', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures. contextTimeout;
+    exec(cmd, function(err, stdout, stderr) {
+      assert(err);
+      assert(!stderr.length);
+
+      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf('1 failing') !== -1);
+      assert(stdout.indexOf('1) parent suite test2:') !== -1);
+      assert(stdout.indexOf('timeout of 100ms exceeded. Ensure the done() ' +
+        'callback is being called in this test.') !== -1);
+
+      done();
+    });
+  });
 });
 
 /**
