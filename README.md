@@ -28,7 +28,8 @@ npm install --save mocha.parallel
  * output. Compatible with both callbacks and promises. Supports hooks, pending
  * or skipped specs/suites via parallel.skip() and it.skip(), but not nested
  * suites.  parallel.only() and it.only() may be used to only wait on the
- * specified specs and suites.
+ * specified specs and suites. Runnable contexts are bound, so this.skip()
+ * may be used from within a spec, but this.timeout() is not supported.
  *
  * @example
  * parallel('setTimeout', function() {
