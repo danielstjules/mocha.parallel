@@ -8,7 +8,8 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  * output. Compatible with both callbacks and promises. Supports hooks, pending
  * or skipped specs/suites via parallel.skip() and it.skip(), but not nested
  * suites.  parallel.only() and it.only() may be used to only wait on the
- * specified specs and suites.
+ * specified specs and suites. Runnable contexts are bound, so this.skip()
+ * may be used from within a spec, but this.timeout() is not supported.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -90,6 +91,24 @@ function _parallel(name, fn, key) {
     parentHooks = getParentHooks(parentContext);
     disableEachHooks(parentContext);
 
+    specs.forEach(function(spec) {
+      if (spec.skip) {
+        return it.skip(spec.name);
+      }
+
+      (spec.only ? it.only : it)(spec.name, function() {
+        if (spec.error) throw spec.error;
+        return spec.promise.then(function() {
+          if (spec.error) throw spec.error;
+        });
+      });
+    });
+
+    // Retrieve spec contexts from suite
+    this.tests.forEach(function(test, i) {
+      specs[i].ctx = test.ctx;
+    });
+
     before(function() {
       // Before hook exceptions are handled by mocha
       return hooks.before().then(function() {
@@ -103,19 +122,6 @@ function _parallel(name, fn, key) {
       // After hook errors are handled by mocha
       if (restoreUncaught) restoreUncaught();
       return hooks.after();
-    });
-
-    specs.forEach(function(spec) {
-      if (spec.skip) {
-        return it.skip(spec.name);
-      }
-
-      (spec.only ? it.only : it)(spec.name, function() {
-        if (spec.error) throw spec.error;
-        return spec.promise.then(function() {
-          if (spec.error) throw spec.error;
-        });
-      });
     });
   });
 }
@@ -154,19 +160,25 @@ function patchIt(specs) {
   };
 
   it = function it(name, fn) {
-    specs.push({
+    var spec = {
       name: name,
-      getPromise: createWrapper(fn),
+      ctx: null,
+      getPromise: function() {
+        return createWrapper(fn, spec.ctx)();
+      },
       only: null,
       skip: null,
       error: null,
       promise: null
-    });
+    };
+
+    specs.push(spec);
   };
 
   it.skip = function skip(name, fn) {
     specs.push({
       name: name,
+      ctx: null,
       getPromise: createWrapper(fn),
       only: null,
       skip: true,
@@ -178,6 +190,7 @@ function patchIt(specs) {
   it.only = function skip(name, fn) {
     specs.push({
       name: name,
+      ctx: null,
       getPromise: createWrapper(fn),
       only: true,
       skip: null,
@@ -219,17 +232,21 @@ function patchHooks(hooks) {
 
 /**
  * Returns a wrapper for a given runnable's fn, including specs or hooks.
+ * Optionally binds the function handler to the passed context.
  *
  * @param   {function} fn
+ * @param   {function} [ctx]
  * @returns {function}
  */
-function createWrapper(fn) {
+function createWrapper(fn, ctx) {
   return function() {
     return new Promise(function(resolve, reject) {
-      var res = fn(function(err) {
+      var cb = function(err) {
         if (err) return reject(err);
         resolve();
-      });
+      };
+
+      var res = fn.call(ctx || this, cb);
 
       // Synchronous spec, or using promises rather than callbacks
       if (!fn.length || (res && res.then)) {

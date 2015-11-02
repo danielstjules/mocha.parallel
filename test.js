@@ -196,6 +196,19 @@ describe('parallel', function() {
       done();
     });
   });
+
+  it('supports this.skip() from a spec', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.contextSkip;
+    exec(cmd, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf('1 pending') !== -1);
+
+      done();
+    });
+  });
 });
 
 /**
