@@ -159,15 +159,17 @@ function patchIt(specs) {
     it = original;
   };
 
-  it = function it(name, fn) {
+  var createSpec = function(name, fn, opts) {
+    opts = opts || {};
+
     var spec = {
       name: name,
       ctx: null,
       getPromise: function() {
         return createWrapper(fn, spec.ctx)();
       },
-      only: null,
-      skip: null,
+      only: opts.only || null,
+      skip: opts.skip || null,
       error: null,
       promise: null
     };
@@ -175,28 +177,16 @@ function patchIt(specs) {
     specs.push(spec);
   };
 
-  it.skip = function skip(name, fn) {
-    specs.push({
-      name: name,
-      ctx: null,
-      getPromise: createWrapper(fn),
-      only: null,
-      skip: true,
-      error: null,
-      promise: null
-    });
+  it = function it(name, fn) {
+    createSpec(name, fn);
   };
 
-  it.only = function skip(name, fn) {
-    specs.push({
-      name: name,
-      ctx: null,
-      getPromise: createWrapper(fn),
-      only: true,
-      skip: null,
-      error: null,
-      promise: null
-    });
+  it.skip = function skip(name, fn) {
+    createSpec(name, fn, {skip: true});
+  };
+
+  it.only = function only(name, fn) {
+    createSpec(name, fn, {only: true});
   };
 
   return restore;
