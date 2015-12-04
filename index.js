@@ -166,6 +166,11 @@ function patchIt(specs) {
   var createSpec = function(name, fn, opts) {
     opts = opts || {};
 
+    // Wrap generator functions
+    if (fn && fn.constructor.name === 'GeneratorFunction') {
+      fn = Promise.coroutine(fn);
+    }
+
     var spec = {
       name: name,
       ctx: null,
