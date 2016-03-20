@@ -9,7 +9,9 @@ var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
  * or skipped specs/suites via parallel.skip() and it.skip(), but not nested
  * suites.  parallel.only() and it.only() may be used to only wait on the
  * specified specs and suites. Runnable contexts are bound, so this.skip()
- * and this.timeout() may be used from within a spec.
+ * and this.timeout() may be used from within a spec. parallel.disable()
+ * may be invoked to use mocha's default test behavior, and parallel.enable()
+ * will re-enable the module.
  *
  * @example
  * parallel('setTimeout', function() {
@@ -29,6 +31,14 @@ function parallel(name, fn) {
 }
 
 /**
+ * Whether or not to enable parallel. If false, specs will be ran using
+ * mocha's default suite behavior.
+ *
+ * @var {bool}
+ */
+var enabled = true;
+
+/**
  * Private function invoked by parallel.
  *
  * @param {string}   name  Name of the function
@@ -36,6 +46,10 @@ function parallel(name, fn) {
  * @param {string}   [key] One of 'skip' or 'only'
  */
 function _parallel(name, fn, key) {
+  if (!enabled) {
+    return (key) ? describe[key](name, fn) : describe(name, fn);
+  }
+
   var specs = [];
   var hooks = {};
   var restoreIt = patchIt(specs);
@@ -149,6 +163,20 @@ parallel.only = function(name, fn) {
 parallel.skip = function(name, fn) {
   _parallel(name, fn, 'skip');
 };
+
+/**
+ * Re-enables parallel if previously disabled.
+ */
+parallel.enable = function() {
+  enabled = false;
+}
+
+/**
+ * Disables parallel, falling back to mocha's default test functionality.
+ */
+parallel.disable = function() {
+  enabled = false;
+}
 
 /**
  * Patches the global it() function used by mocha, and returns a function that

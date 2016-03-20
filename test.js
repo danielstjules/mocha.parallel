@@ -225,6 +225,30 @@ describe('parallel', function() {
       done();
     });
   });
+
+  it('supports parallel.disable() for disabling functionality', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.disable;
+    exec(cmd, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf('disable') !== -1);
+
+      [
+        '✓ test1',
+        '✓ test2'
+      ].forEach(function(line) {
+        assert(stdout.indexOf(line) !== -1);
+      });
+
+      // Specs should run in 1s
+      var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
+      assert.equal(parseInt(timeStr, 10), 1);
+
+      done();
+    });
+  });
 });
 
 /**
