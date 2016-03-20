@@ -2,6 +2,10 @@ var Promise   = require('bluebird');
 var domain    = require('domain');
 var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
 
+// Disable if MOCHA_PARALLEL is defined and falsy
+var enabled = (typeof process.env.MOCHA_PARALLEL === 'undefined') ||
+    (process.env.MOCHA_PARALLEL && JSON.parse(process.env.MOCHA_PARALLEL));
+
 /**
  * Generates a suite for parallel execution of individual specs. While each
  * spec is ran in parallel, specs resolve in series, leading to deterministic
@@ -399,4 +403,4 @@ Promise.onPossiblyUnhandledRejection(function() {
 });
 
 
-module.exports = parallel;
+module.exports = enabled ? parallel : describe;
