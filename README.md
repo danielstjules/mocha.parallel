@@ -16,7 +16,7 @@ with node/iojs, and Mocha 2.x.x.
 ## Installation
 
 ```
-npm install --save mocha.parallel
+npm install --save-dev mocha.parallel
 ```
 
 ## Overview
