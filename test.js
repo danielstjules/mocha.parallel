@@ -3,7 +3,7 @@ var assert   = require('assert');
 var fixtures = require('./fixtures');
 
 describe('parallel', function() {
-  this.timeout(2000);
+  this.timeout(3000);
 
   it('runs specs in parallel', function(done) {
     var cmd = './node_modules/.bin/mocha ' + fixtures.delay;
@@ -245,6 +245,45 @@ describe('parallel', function() {
       // Specs should run in 1s
       var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
       assert.equal(parseInt(timeStr, 10), 1);
+
+      done();
+    });
+  });
+
+
+  it('supports this.timeout(), this.slow(), this.skip() from a spec and parallel', function(done) {
+    var cmd = './node_modules/.bin/mocha -c ' + fixtures.proxyContext;
+    exec(cmd, function(err, stdout, stderr) {
+      assert(err);
+      assert(!stderr.length);
+      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf('1 pending') !== -1);
+      assert(stdout.indexOf('1 failing') !== -1);
+      assert(stdout.indexOf('1) suite test1:') !== -1);
+      assert(stdout.indexOf('timeout of 100ms exceeded. Ensure the done() ' +
+              'callback is being called in this test.') !== -1);
+      assert(stdout.indexOf('test3[0m[31m') !== -1);
+      assert(stdout.indexOf('test4[0m[33m') !== -1);
+
+      done();
+    });
+  });
+
+  it('correctly handles default timeout', function(done) {
+    var cmd = './node_modules/.bin/mocha ' + fixtures.defaultTimeout;
+    exec(cmd, function(err, stdout, stderr) {
+      assert(err);
+      assert(!stderr.length);
+      assert(stdout.indexOf('0 passing') !== -1);
+      assert(stdout.indexOf('2 failing') !== -1);
+      assert(stdout.indexOf('1) suite test1:') !== -1);
+      assert(stdout.indexOf('2) suite test2:') !== -1);
+      var i = stdout.indexOf('timeout of 2000ms exceeded. Ensure the done() ' +
+          'callback is being called in this test.');
+      assert(i !== -1);
+      i = stdout.indexOf('timeout of 2000ms exceeded. Ensure the done() ' +
+          'callback is being called in this test.',i+1);
+      assert(i !== -1);
 
       done();
     });
