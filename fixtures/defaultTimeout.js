@@ -1,4 +1,5 @@
 var parallel = require('../index.js');
+var Promise = require('bluebird');
 //Based on issue #13
 
 parallel("suite", function () {
