@@ -1,5 +1,17 @@
 language: node_js
+
+sudo: false
+
 node_js:
-  - 6
-  - 4
-  - 0.10
+  - "6"
+  - "4"
+  - "0.10"
+
+env:
+  - mocha_version=2.2
+  - mocha_version=2.3
+  - mocha_version=2.4
+  - mocha_version=2.5
+
+before_script:
+  - npm install "mocha@$mocha_version"
