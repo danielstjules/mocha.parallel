@@ -23,7 +23,7 @@
     "url": "https://github.com/danielstjules/mocha.parallel/issues"
   },
   "homepage": "https://github.com/danielstjules/mocha.parallel",
-  "devDependencies": {
+  "peerDependencies": {
     "mocha": "^2.2.5"
   },
   "dependencies": {
