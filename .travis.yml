@@ -12,7 +12,7 @@ env:
   - mocha_version=2.3
   - mocha_version=2.4
   - mocha_version=2.5
-  - mocha_version=3.0
+  - mocha_version=3.1
 
 before_script:
   - npm install "mocha@$mocha_version"
