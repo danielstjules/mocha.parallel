@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/danielstjules/mocha.parallel",
   "peerDependencies": {
-    "mocha": "^2.2.5"
+    "mocha": ">=2.2.5"
   },
   "dependencies": {
     "bluebird": "^2.9.34"
