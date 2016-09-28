@@ -1,5 +1,6 @@
-var Promise   = require('bluebird');
-var domain    = require('domain');
+var Promise            = require('bluebird');
+var domain             = require('domain');
+var ContextProxy    = require('./context-proxy');
 var hookTypes = ['before', 'beforeEach', 'afterEach', 'after'];
 
 /**
@@ -57,8 +58,8 @@ function _parallel(name, fn, key) {
   var restoreUncaught;
   var parentHooks;
   var run;
-
-  fn();
+  var parallel_ctx = new ContextProxy();
+  fn.call(parallel_ctx);
 
   restoreIt();
   restoreHooks();
@@ -102,6 +103,7 @@ function _parallel(name, fn, key) {
   };
 
   (key ? describe[key] : describe)(name, function() {
+    parallel_ctx.patchContext(this);
     var parentContext = this;
     if (!specs.length) return;
 
@@ -115,16 +117,11 @@ function _parallel(name, fn, key) {
 
       (spec.only ? it.only : it)(spec.name, function() {
         if (spec.error) throw spec.error;
+        spec.ctx.patchContext(this);
         return spec.promise.then(function() {
           if (spec.error) throw spec.error;
         });
       });
-    });
-
-    // Retrieve spec contexts from suite, and patch
-    this.tests.forEach(function(test, i) {
-      specs[i].ctx = test.ctx;
-      patchSpecCtx(specs[i])
     });
 
     before(function() {
@@ -196,10 +193,15 @@ function patchIt(specs) {
 
     var spec = {
       name: name,
-      ctx: null,
       getPromise: function() {
-        return createWrapper(fn, spec.ctx)();
+        return Promise.resolve().then(function () {
+          var start = new Date();
+          return createWrapper(fn, spec.ctx)().then(function () {
+            spec.duration = (new Date()) - start;
+          });
+        });
       },
+      duration: 0,
       only: opts.only || null,
       skip: opts.skip || null,
       timeout: null,
@@ -207,6 +209,7 @@ function patchIt(specs) {
       promise: null
     };
 
+    spec.ctx = new ContextProxy(spec);
     specs.push(spec);
   };
 
@@ -223,27 +226,6 @@ function patchIt(specs) {
   };
 
   return restore;
-}
-
-/**
- * Patches a given spec's ctx. Overrides the timeout function.
- *
- * @param {Spec}
- */
-function patchSpecCtx(spec) {
-  var origTimeout = spec.ctx.timeout.bind(spec.ctx);
-  spec.ctx.timeout = function(ms) {
-    // Disable original timeout
-    origTimeout(0);
-    // Apply our timeout
-    ms = ms || 1e9;
-    spec.timeout = setTimeout(function() {
-      var error = new Error('timeout of ' + ms + 'ms exceeded. Ensure the ' +
-        'done() callback is being called in this test.');
-      error.stack = null;
-      throw error;
-    }, ms);
-  }
 }
 
 /**
