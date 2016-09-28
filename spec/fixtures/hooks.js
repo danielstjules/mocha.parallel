@@ -1,4 +1,4 @@
-var parallel = require('../index.js');
+var parallel = require('../../lib/parallel');
 var assert   = require('assert');
 
 parallel('hooks', function() {

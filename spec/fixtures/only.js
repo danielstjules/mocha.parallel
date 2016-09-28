@@ -1,19 +1,16 @@
-var parallel = require('../index.js');
+var parallel = require('../../lib/parallel');
 
 parallel('suite', function() {
-  beforeEach(function() {
-    // sync
-  });
-
   it('test1', function(done) {
     setTimeout(done, 500);
   });
 
-  it('test2', function() {
-    // sync
+  it.only('test2', function(done) {
+    setTimeout(done, 500);
   });
 
   it('test3', function(done) {
+    console.log('should not run');
     setTimeout(done, 500);
   });
 });

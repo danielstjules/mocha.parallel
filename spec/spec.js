@@ -1,26 +1,24 @@
 var exec     = require('child_process').exec;
 var assert   = require('assert');
 var fixtures = require('./fixtures');
+var path     = require('path');
 
 describe('parallel', function() {
   this.timeout(3000);
 
   it('runs specs in parallel', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.delay;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.delay, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
       assert(stdout.indexOf('3 passing') !== -1);
       assert(stdout.indexOf('delays') !== -1);
 
-      [
+      assertSubstrings(stdout, [
         '✓ test1',
         '✓ test2',
         '✓ test3'
-      ].forEach(function(line) {
-        assert(stdout.indexOf(line) !== -1);
-      });
+      ]);
 
       // Specs should run in under 1s
       var timeStr = stdout.match(/passing \((\d+)ms\)/)[1];
@@ -31,8 +29,7 @@ describe('parallel', function() {
   });
 
   it('isolates parallel suite execution', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.multiple;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.multiple, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -44,8 +41,7 @@ describe('parallel', function() {
   });
 
   it('supports synchronous hooks/specs', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.sync;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.sync, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -56,8 +52,7 @@ describe('parallel', function() {
   });
 
   it('supports all mocha hooks', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.hooks;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.hooks, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -69,11 +64,10 @@ describe('parallel', function() {
   });
 
   it('supports parent hooks', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.parentHooks;
     var hookStr = 'suiteABeforeEach, suiteBBeforeEach, suiteABeforeEach, ' +
       'suiteBBeforeEach, childBeforeEach, childBeforeEach';
 
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.parentHooks, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -86,8 +80,7 @@ describe('parallel', function() {
   });
 
   it('correctly handles the readme example', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.hooksExample;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.hooksExample, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -99,55 +92,57 @@ describe('parallel', function() {
   });
 
   it('correctly handles spec failures', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.failure;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.failure, function(err, stdout, stderr) {
       assert(err);
       assert(!stderr.length);
 
-      assert(stdout.indexOf('2 passing') !== -1);
-      assert(stdout.indexOf('1 failing') !== -1);
-      assert(stdout.indexOf('1) suite test2:') !== -1);
-      assert(stdout.indexOf('Error: Expected error') !== -1);
-      assert(stdout.indexOf('fixtures/failure.js:10') !== -1);
+      assertSubstrings(stdout, [
+        '2 passing',
+        '1 failing',
+        '1) suite test2:',
+        'Error: Expected error',
+        'fixtures/failure.js:10'
+      ]);
 
       done();
     });
   });
 
   it('handles async assertion errors', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.assertionFailure;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.assertionFailure, function(err, stdout, stderr) {
       assert(err);
       assert(!stderr.length);
 
-      assert(stdout.indexOf('2 passing') !== -1);
-      assert(stdout.indexOf('1 failing') !== -1);
-      assert(stdout.indexOf('1) suite test2:') !== -1);
-      assert(stdout.indexOf('AssertionError: true == false') !== -1);
-      assert(stdout.indexOf('fixtures/assertionFailure.js:11') !== -1);
+      assertSubstrings(stdout, [
+        '2 passing',
+        '1 failing',
+        '1) suite test2:',
+        'AssertionError: true == false',
+        'fixtures/assertionFailure.js:11'
+      ]);
 
       done();
     });
   });
 
   it('links uncaught exceptions to the spec that threw them', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.uncaughtException;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.uncaughtException, function(err, stdout, stderr) {
       assert(err);
       assert(!stderr.length);
 
-      assert(stdout.indexOf('2 passing') !== -1);
-      assert(stdout.indexOf('1 failing') !== -1);
-      assert(stdout.indexOf('1) uncaught test2:') !== -1);
-      assert(stdout.indexOf('fixtures/uncaughtException.js:11') !== -1);
+      assertSubstrings(stdout, [
+        '2 passing',
+        '1 failing',
+        '1) uncaught test2:',
+      'fixtures/uncaughtException.js:11'
+      ]);
 
       done();
     });
   });
 
   it('supports it.skip for pending specs', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.skip;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.skip, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -159,8 +154,7 @@ describe('parallel', function() {
   });
 
   it('supports parallel.skip for pending suites', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.parallelSkip;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.parallelSkip, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -173,8 +167,7 @@ describe('parallel', function() {
   });
 
   it('supports it.only for specs', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.only;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.only, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -186,8 +179,7 @@ describe('parallel', function() {
   });
 
   it('supports parallel.only for suites', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.parallelOnly;
-    exec(cmd, function(err, stdout, stderr) {
+    run( fixtures.parallelOnly, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -198,8 +190,7 @@ describe('parallel', function() {
   });
 
   it('supports this.skip() from a spec', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.contextSkip;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.contextSkip, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
@@ -211,36 +202,34 @@ describe('parallel', function() {
   });
 
   it('supports this.timeout() from a spec', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures. contextTimeout;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.contextTimeout, function(err, stdout, stderr) {
       assert(err);
       assert(!stderr.length);
 
-      assert(stdout.indexOf('2 passing') !== -1);
-      assert(stdout.indexOf('1 failing') !== -1);
-      assert(stdout.indexOf('1) parent suite test2:') !== -1);
-      assert(stdout.indexOf('timeout of 100ms exceeded. Ensure the done() ' +
-        'callback is being called in this test.') !== -1);
+      assertSubstrings(stdout, [
+        '2 passing',
+        '1 failing',
+        '1) parent suite test2:',
+        'timeout of 100ms exceeded. Ensure the done()',
+        'callback is being called in this test.'
+      ]);
 
       done();
     });
   });
 
   it('supports parallel.disable() for disabling functionality', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.disable;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.disable, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
-      assert(stdout.indexOf('2 passing') !== -1);
-      assert(stdout.indexOf('disable') !== -1);
 
-      [
+      assertSubstrings(stdout, [
+        '2 passing',
+        'disable',
         '✓ test1',
         '✓ test2'
-      ].forEach(function(line) {
-        assert(stdout.indexOf(line) !== -1);
-      });
+      ]);
 
       // Specs should run in 1s
       var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
@@ -251,44 +240,65 @@ describe('parallel', function() {
   });
 
 
-  it('supports this.timeout(), this.slow(), this.skip() from a spec and parallel', function(done) {
-    var cmd = './node_modules/.bin/mocha -c ' + fixtures.proxyContext;
-    exec(cmd, function(err, stdout, stderr) {
+  it('supports timeout/slow/skip from specs and suites', function(done) {
+    run(fixtures.contextProxy, function(err, stdout, stderr) {
       assert(err);
       assert(!stderr.length);
       assert(stdout.indexOf('2 passing') !== -1);
       assert(stdout.indexOf('1 pending') !== -1);
       assert(stdout.indexOf('1 failing') !== -1);
       assert(stdout.indexOf('1) suite test1:') !== -1);
-      assert(stdout.indexOf('timeout of 100ms exceeded. Ensure the done() ' +
-              'callback is being called in this test.') !== -1);
-      assert(stdout.indexOf('test3[0m[31m') !== -1);
-      assert(stdout.indexOf('test4[0m[33m') !== -1);
+      assert(stdout.indexOf('timeout of 100ms exceeded') !== -1);
 
       done();
     });
   });
 
   it('correctly handles default timeout', function(done) {
-    var cmd = './node_modules/.bin/mocha ' + fixtures.defaultTimeout;
-    exec(cmd, function(err, stdout, stderr) {
+    run(fixtures.defaultTimeout, function(err, stdout, stderr) {
       assert(err);
       assert(!stderr.length);
       assert(stdout.indexOf('0 passing') !== -1);
       assert(stdout.indexOf('2 failing') !== -1);
       assert(stdout.indexOf('1) suite test1:') !== -1);
       assert(stdout.indexOf('2) suite test2:') !== -1);
-      var i = stdout.indexOf('timeout of 2000ms exceeded. Ensure the done() ' +
-          'callback is being called in this test.');
+      var i = stdout.indexOf('timeout of 2000ms exceeded');
       assert(i !== -1);
-      i = stdout.indexOf('timeout of 2000ms exceeded. Ensure the done() ' +
-          'callback is being called in this test.',i+1);
+      i = stdout.indexOf('timeout of 2000ms exceeded', i + 1);
       assert(i !== -1);
 
       done();
     });
   });
 });
+
+/**
+ * Runs mocha with the supplied argumentss, and passes the resulting stdout and
+ * stderr to the callback.
+ *
+ * @param {...string} args
+ * @param {function}  fn
+ */
+function run() {
+  var bin = path.resolve(__dirname, '../node_modules/.bin/mocha');
+  var args = Array.prototype.slice.call(arguments);
+  var fn = args.pop();
+  var cmd = [bin].concat(args).join(' ');
+  exec(cmd, fn);
+}
+
+/**
+ * Asserts that each substring is present in the supplied string.
+ *
+ * @param {string}   str
+ * @param {string[]} substrings
+ */
+function assertSubstrings(str, substrings) {
+  substrings.forEach(function(substring) {
+    assert(str.indexOf(substring) !== -1, + str +
+      ' - string does not contain: ' + substring);
+  });
+}
 
 /**
  * Asserts that a given test suite ran for one second, given mocha's stdout.

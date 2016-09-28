@@ -1,4 +1,4 @@
-var parallel = require('../index.js');
+var parallel = require('../../lib/parallel');
 
 parallel.skip('suite', function() {
   it('test1', function(done) {

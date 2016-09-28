@@ -1,4 +1,4 @@
-var parallel = require('../index.js');
+var parallel = require('../../lib/parallel');
 
 describe('parent', function() {
   this.timeout(0);

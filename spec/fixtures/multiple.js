@@ -1,4 +1,4 @@
-var parallel = require('../index.js');
+var parallel = require('../../lib/parallel');
 var Promise  = require('bluebird');
 
 parallel('suite1', function() {
