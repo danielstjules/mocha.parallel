@@ -12,7 +12,7 @@ parallel('hooks', function() {
     }, 100);
   });
 
-  beforeEach(function(done) {
+  beforeEach('hook with title', function(done) {
     setTimeout(function() {
       i++;
       done();
