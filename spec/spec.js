@@ -252,6 +252,7 @@ describe('parallel', function() {
 
   it('correctly handles default timeout', function(done) {
     run(fixtures.defaultTimeout, function(err, stdout, stderr) {
+      stdout = stdout.toLowerCase();
       assert(err);
       assert(!stderr.length);
       assert(stdout.indexOf('0 passing') !== -1);
