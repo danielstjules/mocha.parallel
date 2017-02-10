@@ -5,14 +5,6 @@ with node/iojs, and Mocha 2.3.5 - 3.x.x.
 
 [![Build Status](https://travis-ci.org/danielstjules/mocha.parallel.svg?branch=master)](https://travis-ci.org/danielstjules/mocha.parallel)
 
-## Success stories
-
-* **[neo-async](https://github.com/suguru03/neo-async/commit/10af3dbb84c19ca2b0bb06892b188832649198d0)**:
-  Cut test suite running time from 20m to 7m
-* **[nightmare](https://github.com/segmentio/nightmare/pull/209)**:
-  Cut test suite running time from 2m to 1m
-* **[node-horseman](https://github.com/johntitus/node-horseman/commit/8fe00cd372ad1d9c1e794da8d61ee51149c63d6f)**
-
 ## Installation
 
 ```
@@ -31,7 +23,8 @@ npm install --save-dev mocha.parallel
  * specified specs and suites. Runnable contexts are bound, so this.skip()
  * and this.timeout() may be used from within a spec. parallel.disable()
  * may be invoked to use mocha's default test behavior, and parallel.enable()
- * will re-enable the module.
+ * will re-enable the module. parallel.limit(n) can be used to limit the number
+ * of specs running simultaneously.
  *
  * @example
  * parallel('setTimeout', function() {
