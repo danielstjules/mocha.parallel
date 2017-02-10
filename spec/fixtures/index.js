@@ -1,13 +1,8 @@
 var path = require('path');
+var fs   = require('fs');
 
-var absolutePaths = {};
-var fixtures = ['delay', 'multiple', 'hooks', 'hooksExample',
-  'uncaughtException', 'parallelSkip', 'skip', 'only', 'parallelOnly',
-  'failure', 'assertionFailure', 'parentHooks', 'sync', 'contextSkip',
-  'contextTimeout', 'disable','contextProxy','defaultTimeout'];
-
-fixtures.forEach(function(fixture) {
-  absolutePaths[fixture] = path.resolve(__dirname, fixture + '.js');
-});
-
-module.exports = absolutePaths;
+module.exports = fs.readdirSync(__dirname).reduce(function(res, file) {
+  var key = file.replace('.js', '');
+  res[key] = path.resolve(__dirname, file);
+  return res;
+}, {});

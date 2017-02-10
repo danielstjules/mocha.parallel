@@ -13,16 +13,21 @@ describe('parallel', function() {
       assert(!stderr.length);
       assert(stdout.indexOf('3 passing') !== -1);
       assert(stdout.indexOf('delays') !== -1);
+      assertSubstrings(stdout, ['✓ test1', '✓ test2', '✓ test3']);
+      assert(getRuntime(stdout) < 600);
 
-      assertSubstrings(stdout, [
-        '✓ test1',
-        '✓ test2',
-        '✓ test3'
-      ]);
+      done();
+    });
+  });
 
-      // Specs should run in under 1s
-      var timeStr = stdout.match(/passing \((\d+)ms\)/)[1];
-      assert(parseInt(timeStr, 10) < 600);
+  it('limits number of concurrent specs if specified', function(done) {
+    run(fixtures.concurrency, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('4 passing') !== -1);
+      assertSubstrings(stdout, ['✓ test1', '✓ test2', '✓ test3', '✓ test4']);
+      assert.equal(getRuntime(stdout), 1);
 
       done();
     });
@@ -134,7 +139,7 @@ describe('parallel', function() {
         '2 passing',
         '1 failing',
         '1) uncaught test2:',
-      'fixtures/uncaughtException.js:11'
+        'fixtures/uncaughtException.js:11'
       ]);
 
       done();
@@ -223,17 +228,8 @@ describe('parallel', function() {
       if (err) return done(err);
 
       assert(!stderr.length);
-
-      assertSubstrings(stdout, [
-        '2 passing',
-        'disable',
-        '✓ test1',
-        '✓ test2'
-      ]);
-
-      // Specs should run in 1s
-      var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
-      assert.equal(parseInt(timeStr, 10), 1);
+      assertSubstrings(stdout, ['2 passing', 'disable', '✓ test1', '✓ test2']);
+      assert.equal(getRuntime(stdout), 1);
 
       done();
     });
@@ -285,6 +281,17 @@ function run() {
   var fn = args.pop();
   var cmd = [bin].concat(args).join(' ');
   exec(cmd, fn);
+}
+
+/**
+ * Returns mocha's runtime given the stdout of a run.
+ *
+ * @param   {string} str
+ * @returns {int}
+ */
+function getRuntime(str) {
+  var timeStr = str.match(/passing \((\d+)\w+\)/)[1];
+  return parseInt(timeStr, 10);
 }
 
 /**
