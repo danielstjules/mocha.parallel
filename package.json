@@ -27,6 +27,7 @@
     "mocha": ">=2.2.5"
   },
   "dependencies": {
-    "bluebird": "^2.9.34"
+    "bluebird": "^2.9.34",
+    "semaphore": "^1.0.5"
   }
 }
