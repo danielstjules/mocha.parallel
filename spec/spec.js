@@ -4,7 +4,7 @@ var fixtures = require('./fixtures');
 var path     = require('path');
 
 describe('parallel', function() {
-  this.timeout(3000);
+  this.timeout(4000);
 
   it('runs specs in parallel', function(done) {
     run(fixtures.delay, function(err, stdout, stderr) {
