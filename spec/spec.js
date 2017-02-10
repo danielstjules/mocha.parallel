@@ -20,8 +20,8 @@ describe('parallel', function() {
     });
   });
 
-  it('limits number of concurrent specs if specified', function(done) {
-    run(fixtures.concurrency, function(err, stdout, stderr) {
+  it('can limit the number of specs running simultaneously', function(done) {
+    run(fixtures.limit, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);

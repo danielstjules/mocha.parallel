@@ -1,7 +1,7 @@
 var parallel = require('../../lib/parallel');
 var Promise  = require('bluebird');
 
-parallel.concurrency(2);
+parallel.limit(2);
 
 parallel('suite', function() {
   it('test1', function(done) {
