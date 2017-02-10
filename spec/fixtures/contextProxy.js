@@ -1,7 +1,7 @@
 var parallel = require('../../lib/parallel');
 var assert   = require('assert');
 
-parallel('suite', function () {
+parallel('suite', function() {
   this.timeout(3000);
   this.slow(2600);
 
