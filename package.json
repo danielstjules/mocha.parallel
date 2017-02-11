@@ -29,5 +29,8 @@
   "dependencies": {
     "bluebird": "^2.9.34",
     "semaphore": "^1.0.5"
+  },
+  "devDependencies": {
+    "dirmap": "0.0.2"
   }
 }

@@ -1,6 +1,8 @@
 var exec     = require('child_process').exec;
 var assert   = require('assert');
-var fixtures = require('./fixtures');
+var path     = require('path');
+var dirmap   = require('dirmap');
+var fixtures = dirmap(path.resolve(__dirname, './fixtures'), true);
 var path     = require('path');
 
 describe('parallel', function() {
