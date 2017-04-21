@@ -269,6 +269,16 @@ describe('parallel', function() {
       done();
     });
   });
+
+  it.only('correctly reports duration for synchronous tests', function(done) {
+    run(fixtures.syncTime, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert.equal(stdout.indexOf('a ('), -1);
+      done();
+    });
+  });
 });
 
 /**
