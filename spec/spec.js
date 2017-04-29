@@ -270,12 +270,20 @@ describe('parallel', function() {
     });
   });
 
-  it.only('correctly reports duration for synchronous tests', function(done) {
+  it('correctly reports duration for synchronous tests', function(done) {
     run(fixtures.syncTime, function(err, stdout, stderr) {
       if (err) return done(err);
 
       assert(!stderr.length);
       assert.equal(stdout.indexOf('a ('), -1);
+      done();
+    });
+  });
+
+  it('correctly handles promise rejections', function(done) {
+    run(fixtures.promiseRejection, function(err, stdout, stderr) {
+      assert(err);
+      assert(stdout.indexOf('AssertionError: false == true') !== -1);
       done();
     });
   });
