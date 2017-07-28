@@ -155,6 +155,7 @@ describe('parallel', function() {
       assert(!stderr.length);
       assert(stdout.indexOf('2 passing') !== -1);
       assert(stdout.indexOf('1 pending') !== -1);
+      assert(stdout.indexOf('should not appear') === -1);
 
       done();
     });

@@ -6,6 +6,7 @@ parallel('suite', function() {
   });
 
   it.skip('test2', function(done) {
+    console.log('should not appear');
     setTimeout(done, 500);
   });
 
