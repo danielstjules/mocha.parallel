@@ -71,6 +71,6 @@ parallel('second suite', function() {
   });
 
   it('test', function() {
-    i++;
+    assert.equal(i, 10)
   });
 });
