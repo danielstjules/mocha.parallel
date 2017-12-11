@@ -124,7 +124,7 @@ describe('parallel', function() {
         '2 passing',
         '1 failing',
         '1) suite test2:',
-        'AssertionError: true == false',
+        'true == false',
         'fixtures/assertionFailure.js:11'
       ]);
 
@@ -284,7 +284,7 @@ describe('parallel', function() {
   it('correctly handles promise rejections', function(done) {
     run(fixtures.promiseRejection, function(err, stdout, stderr) {
       assert(err);
-      assert(stdout.indexOf('AssertionError: false == true') !== -1);
+      assert(stdout.indexOf('false == true') !== -1);
       done();
     });
   });
