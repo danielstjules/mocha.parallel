@@ -70,6 +70,17 @@ describe('parallel', function() {
     });
   });
 
+  it('correctly supports root hooks', function(done) {
+    run(fixtures.rootHooks, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('2 passing') !== -1);
+
+      done();
+    });
+  });
+
   it('supports parent hooks', function(done) {
     var hookStr = 'suiteABeforeEach, suiteBBeforeEach, suiteABeforeEach, ' +
       'suiteBBeforeEach, childBeforeEach, childBeforeEach';
