@@ -3,20 +3,27 @@ language: node_js
 sudo: false
 
 node_js:
-  - "7"
+  - "node"
+  - "8"
+  - "6"
+  - "4"
   - "0.10"
 
 env:
-  - mocha_version=2.2
-  - mocha_version=2.3
-  - mocha_version=2.4
-  - mocha_version=2.5
-  - mocha_version=3.0
-  - mocha_version=3.1
-  - mocha_version=3.2
-  - mocha_version=3.3
-  - mocha_version=3.4
-  - mocha_version=3.5
+  matrix:
+    - mocha_version=2
+    - mocha_version=3
+    - mocha_version=4
+    - mocha_version=5
+
+matrix:
+  exclude:
+  - node_js: "0.10"
+    env: mocha_version=4
+  - node_js: "0.10"
+    env: mocha_version=5
+  - node_js: "4"
+    env: mocha_version=5
 
 before_script:
   - npm install "mocha@$mocha_version"
