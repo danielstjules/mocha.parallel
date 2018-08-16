@@ -114,6 +114,7 @@ describe('parallel', function() {
       assert(err);
       assert(!stderr.length);
 
+      stdout = stdout.replace(/\n\s+/g, ' '); // remove new lines
       assertSubstrings(stdout, [
         '2 passing',
         '1 failing',
@@ -131,6 +132,7 @@ describe('parallel', function() {
       assert(err);
       assert(!stderr.length);
 
+      stdout = stdout.replace(/\n\s+/g, ' '); // remove new lines
       assertSubstrings(stdout, [
         '2 passing',
         '1 failing',
@@ -148,6 +150,7 @@ describe('parallel', function() {
       assert(err);
       assert(!stderr.length);
 
+      stdout = stdout.replace(/\n\s+/g, ' '); // remove new lines
       assertSubstrings(stdout, [
         '2 passing',
         '1 failing',
@@ -225,6 +228,7 @@ describe('parallel', function() {
       assert(err);
       assert(!stderr.length);
 
+      stdout = stdout.replace(/\n\s+/g, ' '); // remove new lines
       assertSubstrings(stdout, [
         '2 passing',
         '1 failing',
@@ -252,6 +256,7 @@ describe('parallel', function() {
 
   it('supports timeout/slow/skip from specs and suites', function(done) {
     run(fixtures.contextProxy, function(err, stdout, stderr) {
+      stdout = stdout.replace(/\n\s+/g, ' '); // remove new lines
       assert(err);
       assert(!stderr.length);
       assert(stdout.indexOf('2 passing') !== -1);
@@ -266,7 +271,7 @@ describe('parallel', function() {
 
   it('correctly handles default timeout', function(done) {
     run(fixtures.defaultTimeout, function(err, stdout, stderr) {
-      stdout = stdout.toLowerCase();
+      stdout = stdout.replace(/\n\s+/g, ' ').toLowerCase();
       assert(err);
       assert(!stderr.length);
       assert(stdout.indexOf('0 passing') !== -1);
@@ -312,7 +317,7 @@ function run() {
   var bin = path.resolve(__dirname, '../node_modules/.bin/mocha');
   var args = Array.prototype.slice.call(arguments);
   var fn = args.pop();
-  var cmd = [bin].concat(args).join(' ');
+  var cmd = [bin].concat(args).join(' ') + ' --no-colors';
   exec(cmd, fn);
 }
 
@@ -335,7 +340,7 @@ function getRuntime(str) {
  */
 function assertSubstrings(str, substrings) {
   substrings.forEach(function(substring) {
-    assert(str.indexOf(substring) !== -1, + str +
+    assert(str.indexOf(substring) !== -1, str +
       ' - string does not contain: ' + substring);
   });
 }
