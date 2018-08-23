@@ -13,4 +13,6 @@ parallel('suite', function() {
   it('test3', function(done) {
     setTimeout(done, 500);
   });
+
+  it('skip4')
 });
