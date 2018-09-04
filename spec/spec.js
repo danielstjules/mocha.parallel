@@ -84,6 +84,8 @@ describe('parallel', function() {
   it('supports parent hooks', function(done) {
     var hookStr = 'suiteABeforeEach, suiteBBeforeEach, suiteABeforeEach, ' +
       'suiteBBeforeEach, childBeforeEach, childBeforeEach';
+    var afterHookStr = 'suiteBAfterEach, suiteAAfterEach, ' +
+      'suiteBAfterEach, suiteAAfterEach';
 
     run(fixtures.parentHooks, function(err, stdout, stderr) {
       if (err) return done(err);
@@ -91,7 +93,33 @@ describe('parallel', function() {
       assert(!stderr.length);
       assert(stdout.indexOf('2 passing') !== -1);
       assert(stdout.indexOf(hookStr) !== -1);
+      assert(stdout.indexOf(afterHookStr) !== -1);
       assertOneSecond(stdout);
+
+      done();
+    });
+  });
+
+  // https://github.com/danielstjules/mocha.parallel/pull/47
+  it('parent hooks regression after parallel unregistered', function(done) {
+    var primerStr = 'trigger hooks removal\n' +
+      'globalBeforeEach, globalBeforeEach, globalAfterEach, globalAfterEach,'
+    var test1Str = 'hooks\nglobalBeforeEach, suiteABeforeEach, suiteBBeforeEach, ' +
+      'childBeforeEach, test1,';
+    var test2Str = 'suiteBAfterEach, suiteAAfterEach, globalAfterEach, ' +
+      'globalBeforeEach, suiteABeforeEach, suiteBBeforeEach, childBeforeEach, test2';
+    var afterHookStr = 'suiteBAfterEach, suiteAAfterEach, globalAfterEach';
+
+    run(fixtures.parentHooksRegression, function(err, stdout, stderr) {
+      if (err) return done(err);
+
+      assert(!stderr.length);
+      assert(stdout.indexOf('4 passing') !== -1);
+      assert(stdout.indexOf(primerStr) !== -1);
+      assert(stdout.indexOf(test1Str) !== -1);
+      assert(stdout.indexOf(test2Str) !== -1);
+      assert(stdout.indexOf(afterHookStr) !== -1);
+      assertSeconds(stdout, 3); // takes longer
 
       done();
     });
@@ -351,6 +379,16 @@ function assertSubstrings(str, substrings) {
  * @param {string} stdout
  */
 function assertOneSecond(stdout) {
+  return assertSeconds(stdout, 1);
+}
+
+/**
+ * Asserts that a given test suite ran for some number of seconds.
+ *
+ * @param {string} stdout
+ * @param {number} seconds
+ */
+function assertSeconds(stdout, seconds) {
   var timeStr = stdout.match(/passing \((\d+)s\)/)[1];
-  assert(parseInt(timeStr, 10) === 1);
+  assert(parseInt(timeStr, 10) === seconds);
 }
