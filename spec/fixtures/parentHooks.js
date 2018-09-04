@@ -20,11 +20,25 @@ describe('suiteA', function() {
     }, 50);
   });
 
+  afterEach(function(done) {
+    process.stdout.write('suiteAAfterEach, ');
+    setTimeout(function() {
+      done();
+    }, 50);
+  });
+
   describe('suiteB', function() {
     beforeEach(function(done) {
       process.stdout.write('suiteBBeforeEach, ');
       setTimeout(function() {
         i++;
+        done();
+      }, 50);
+    });
+
+    afterEach(function(done) {
+      process.stdout.write('suiteBAfterEach, ');
+      setTimeout(function() {
         done();
       }, 50);
     });
@@ -49,7 +63,7 @@ describe('suiteA', function() {
 
       it('test2', function(done) {
         process.stdout.write('test2\n');
-        // Incremented by before, 6x beforeEach
+        // Incremented by before and 6x beforeEach
         setTimeout(function() {
           assert.equal(i, 7);
           done();
