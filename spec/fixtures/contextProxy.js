@@ -28,6 +28,7 @@ parallel('suite', function() {
     assert.strictEqual('test5', this.spec.title);
     assert.strictEqual('test5', this.spec.fullTitle());
     assert.strictEqual('test5', this.spec.name);
+    assert.strictEqual('test5', this.spec.titlePath());
     done();
   });
 });
