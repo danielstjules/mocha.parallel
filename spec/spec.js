@@ -259,11 +259,12 @@ describe('parallel', function() {
       stdout = stdout.replace(/\n\s+/g, ' '); // remove new lines
       assert(err);
       assert(!stderr.length);
-      assert(stdout.indexOf('2 passing') !== -1);
+      assert(stdout.indexOf('3 passing') !== -1);
       assert(stdout.indexOf('1 pending') !== -1);
       assert(stdout.indexOf('1 failing') !== -1);
       assert(stdout.indexOf('1) suite test1:') !== -1);
       assert(stdout.indexOf('timeout of 100ms exceeded') !== -1);
+
 
       done();
     });

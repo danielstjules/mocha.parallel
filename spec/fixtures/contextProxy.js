@@ -23,4 +23,12 @@ parallel('suite', function() {
   it('test4', function(done) {
     setTimeout(done, 2500);
   });
+
+  it('test5', function(done) {
+    assert.strictEqual('test5', this.spec.title);
+    assert.strictEqual('test5', this.spec.fullTitle());
+    assert.strictEqual('test5', this.spec.name);
+    assert.strictEqual('test5', this.spec.titlePath());
+    done();
+  });
 });
