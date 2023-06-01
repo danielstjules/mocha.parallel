@@ -300,7 +300,7 @@ describe('parallel', function() {
   it('correctly handles promise rejections', function(done) {
     run(fixtures.promiseRejection, function(err, stdout, stderr) {
       assert(err);
-      assert(stdout.indexOf('false == true') !== -1);
+      assert(stdout.indexOf('expression evaluated to a falsy value') !== -1);
       done();
     });
   });
