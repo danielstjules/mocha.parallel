@@ -24,7 +24,12 @@ npm install --save-dev mocha.parallel
  * and this.timeout() may be used from within a spec. parallel.disable()
  * may be invoked to use mocha's default test behavior, and parallel.enable()
  * will re-enable the module. parallel.limit(n) can be used to limit the number
- * of specs running simultaneously.
+ * of specs running simultaneously. parallel.maxRetries(n) is useful if some 
+ * tests have dependecies (ex: network) that fail from time to time. 
+ * parallel.retryTimeoutInMiliseconds(n) is useful if some tests hang from time 
+ * to time. parallel.getRetriedTestFailures() can be used to include retried 
+ * test failures in a custom Mocha reporter. 
+
  *
  * @example
  * parallel('setTimeout', function() {
