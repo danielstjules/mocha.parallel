@@ -29,6 +29,7 @@ function flakySuite(flakyDelay=100){
 
     // after hook is a simplistic approach to building a reporter for flaky tests.
     // Consider using .getRetriedTestFailures() to build a proper mocha reporter
+    // For more details, see https://mochajs.org/api/tutorial-custom-reporter.html
     after(async () => {
       if(parallel.getRetriedTestFailures().length>0){
         console.log("\n\nFlaky Tests:")
