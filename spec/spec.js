@@ -300,7 +300,55 @@ describe('parallel', function() {
   it('correctly handles promise rejections', function(done) {
     run(fixtures.promiseRejection, function(err, stdout, stderr) {
       assert(err);
-      assert(stdout.indexOf('false == true') !== -1);
+      assert(stdout.indexOf('expression evaluated to a falsy value') !== -1);
+      done();
+    });
+  });
+
+  it('can retry failing tests if maxRetries is specified', function(done) {
+    run(fixtures.flakyWithRetries, function(err, stdout, stderr) {
+      assert(err);
+      assert(stdout.indexOf('bad:') !== -1,"bad is part of the standard error report");
+      assert(stdout.indexOf('failed 3 times: bad') !== -1,"bad is part of the flaky tests section");
+      assert(stdout.indexOf('ugly:') === -1,"ugly is not part of the standard error report");
+      assert(stdout.indexOf('failed 1 times: ugly') !== -1,"ugly is part of the flaky tests section");
+      assert(stdout.indexOf('failed 2 times: ugly') === -1,"ugly failed only once");
+      assert(stdout.indexOf('Error: Flaky error') !== -1,"ugly has a flaky error");
+      
+      done();
+    });
+  });
+
+  it('maxRetries is an opt in arg', function(done) {
+    run(fixtures.flakyWithDefaultArgs, function(err, stdout, stderr) {
+      assert(err);
+      assert(stdout.indexOf('Flaky Tests:') === -1,"No Flaky tests section if maxRetries is not specified");
+      assert(stdout.indexOf('bad:') !== -1,"bad is part of the standard error report");
+      assert(stdout.indexOf('ugly:') !== -1,"ugly is part of the standard error report");
+
+      done();
+    });
+  });
+
+  it('can retry tests that hang if retryTimeoutInMiliseconds is specified', function(done) {
+    run(fixtures.flakyWithRetryTimeout, function(err, stdout, stderr) {
+      assert(err);
+      assert(stdout.indexOf('bad:') !== -1,"bad is part of the standard error report");
+      assert(stdout.indexOf('failed 3 times: bad') !== -1,"bad is part of the flaky tests section");
+      assert(stdout.indexOf('ugly:') === -1,"ugly is not part of the standard error report");
+      assert(stdout.indexOf('failed 1 times: ugly') !== -1,"ugly is part of the flaky tests section");
+      assert(stdout.indexOf('failed 2 times: ugly') === -1,"ugly failed only once");
+      assert(stdout.indexOf('Error: timeoutBeforeRetryError: timeout of 500ms') !== -1,"ugly has a timeout error");
+
+      done();
+    });
+  });
+
+  it('retryTimeoutInMiliseconds does not change the default timeout behaviour of Mocha', function(done) {
+    run(fixtures.flakyAndDefaultTimeout, function(err, stdout, stderr) {
+      assert(err);
+      stdout.indexOf('timeout of 2000ms exceeded');
+
       done();
     });
   });
